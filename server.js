@@ -10,14 +10,20 @@ var server = http.createServer(router);
 
 router.use(function (req, res, next) {
 
+    // Website you wish to allow to connect
     res.setHeader('Access-Control-Allow-Origin', '*');
 
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
 
+    // Request headers you wish to allow
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
 
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
     res.setHeader('Access-Control-Allow-Credentials', true);
 
+    // Pass to next layer of middleware
     next();
 });
 
@@ -34,8 +40,8 @@ router.get('/', function(req, res){
 
 //Cadastrar novo usuario: [Melhorar]
 router.post('/signup', function(req, res){
-  var senha = req.headers.senha;
-  var login = req.headers.login;
+  var senha = req.body.senha;
+  var login = req.body.login;
   
   var senhaCriptoHex = utils.criptoToHex(senha);
   var loginCriptoHex = utils.criptoToHex(login);
@@ -58,17 +64,19 @@ router.post('/auth', function(req, res){
     * Procurar o login no banco junto com a senha [criptografada]
     * Descriptografar a senha [do bd] e comparar com a informada [na requisição]
   */
-  var senhaReq = req.headers.senha;
-  var loginReq = req.headers.login;
+  
+  var senhaReq = req.body.senha;
+  var loginReq = req.body.login;
   
   var dados = utils.findUserByLogin(loginReq)[0];
   
   var senhaDesc = utils.decriptFromHex(dados.senha);
+  console.log(senhaDesc)
   if(senhaDesc == senhaReq){
-    res.status(200).send("ok auth");    
+    res.status(200).send({"confirmed":true, "message":"ok auth"});    
   }
   else{
-    res.status(200).send("Não foi possível autenticar!");  
+    res.status(200).send({"confirmed":false, "message":"Não foi possível autenticar!"});  
   }
 });
 
@@ -90,8 +98,10 @@ router.post('/decrypt', function(req, res){
 
 
 
-router.post('/upload', function (req, res, next) {
-  
+router.get('/list-files', function (req, res) {
+  var files = utils.listFiles();
+  console.log(files);
+  res.status(200).send(files);
 });
 
 

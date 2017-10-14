@@ -67,11 +67,22 @@ module.exports = {
         return jsonPathDecriptFile;
     },
     createUser: function(login, senha){
-        fs.appendFile('/db.json', `{"login":"${login}", "senha": "${senha}"}`, 'utf8', (err) => {
+        var dbPath = generatePath(db.json)
+        fs.appendFile(dbPath, `{"login":"${login}", "senha": "${senha}"}`, 'utf8', (err) => {
             if (err) throw err;
             console.log(`Sucesso ao salvar arquivo!`)
         });
         return true;
+    },
+    listFiles: function(){
+        const uploadsFolder = path.join(__dirname, '..', 'uploads');;
+       
+        fs.readdir(uploadsFolder, (err, files) => {
+            if(err) throw(err)
+            return files.map(file => file);
+            
+        })
+        
     }
 
 }
