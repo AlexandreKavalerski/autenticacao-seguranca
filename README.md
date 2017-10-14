@@ -1,5 +1,5 @@
-# python-cripto
-> Sistema desenvolvido na disciplina Segurança de Sistemas
+# node-cripto
+> Sistema em NodeJS desenvolvido na disciplina Segurança de Sistemas
 
 ### Objetivo:
 Desenvolver um software que utilize conceitos de criptografia para fornecer as seguintes funcionalidades:
