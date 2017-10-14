@@ -1,49 +1,34 @@
-//
-// # SimpleServer
-//
-// A simple chat server using Socket.IO, Express, and Async.
-//
 var http = require('http');
 var path = require('path');
 var utils = require('./auth/utils.js');
 var async = require('async');
-var socketio = require('socket.io');
 var express = require('express');
+var bodyParser = require('body-parser');
 
-//
-// ## SimpleServer `SimpleServer(obj)`
-//
-// Creates a new instance of SimpleServer with the following options:
-//  * `port` - The HTTP port to listen on. If `process.env.PORT` is set, _it overrides this value_.
-//
 var router = express();
 var server = http.createServer(router);
-var io = socketio.listen(server);
 
-router.use(express.static(path.resolve(__dirname, 'client')));
-// Add headers
 router.use(function (req, res, next) {
 
-    // Website you wish to allow to connect
     res.setHeader('Access-Control-Allow-Origin', '*');
 
-    // Request methods you wish to allow
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 
-    // Request headers you wish to allow
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
 
-    // Set to true if you need the website to include cookies in the requests sent
-    // to the API (e.g. in case you use sessions)
     res.setHeader('Access-Control-Allow-Credentials', true);
 
-    // Pass to next layer of middleware
     next();
 });
 
-router.get('/home', function(req, res){
-  var home = [{"nome":"Alexandre"}, {"nome":"Henrique"}]
-  res.status(200).send(home);  
+
+router.use(bodyParser.urlencoded({ extended: false }));
+router.use(bodyParser.json())
+
+
+router.get('/', function(req, res){
+  var allUsers = utils.allUsers();
+  res.status(200).send(allUsers);  
 
 });
 
@@ -61,12 +46,14 @@ router.post('/signup', function(req, res){
   console.log(`Login antes de criptografar: ${login}`);
   console.log(`Login após criptografar: ${loginCriptoHex}`);
   
+  //var result = utils.createUser(login, senhaCriptoHex);
+  
   res.status(200).send("ok");  
 });
 
 //Fazer Login no sistema:
 router.post('/auth', function(req, res){
-  //Senha e Login vêm descriptografados
+  //Senha e Login vêm decriptados
   /*Deve-se: 
     * Procurar o login no banco junto com a senha [criptografada]
     * Descriptografar a senha [do bd] e comparar com a informada [na requisição]
@@ -81,19 +68,27 @@ router.post('/auth', function(req, res){
     res.status(200).send("ok auth");    
   }
   else{
-    res.status(403).send("forbidden");  
+    res.status(200).send("Não foi possível autenticar!");  
   }
 });
 
 router.post('/encrypt', function(req, res){
-  utils.encrypt();
-  res.status(200).send("success");
+  var fileName = req.body.file_name;
+  var key = req.body.key;
+  var generatedFile = utils.encrypt(fileName, key);
+  
+  res.download(generatedFile);
 });
 
-router.get('/decrypt', function(req, res){
-  utils.decrypt();
-  res.status(200).send("success");
+router.post('/decrypt', function(req, res){
+  var fileName = req.body.file_name;
+  var key = req.body.key;
+  var generatedFile = utils.decrypt(fileName, key);
+  
+  res.download(generatedFile);
 });
+
+
 
 router.post('/upload', function (req, res, next) {
   
